@@ -1,121 +1,136 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useMemo } from 'react'
 import './App.css'
 
+import AuthPage from './components/AuthPage'
+import BudgetsView from './components/BudgetsView'
+import DashboardView from './components/DashboardView'
+import Header from './components/Header'
+import ReportsView from './components/ReportsView'
+import Sidebar from './components/Sidebar'
+import TransactionModal from './components/TransactionModal'
+import TransactionsView from './components/TransactionsView'
+
+import { useAuth } from './contexts/AuthContext'
+import { useLanguage } from './contexts/LanguageContext'
+import { budgetActions } from './store/budgetSlice'
+import { useBudgetDispatch, useBudgetStore } from './store/store'
+
+import budgetService from './services/BudgetService'
+import {
+  calculateReports,
+  calculateSummary,
+  calculateTrend,
+  filterTransactions,
+  monthlyTransactions,
+} from './services/financeService'
+import transactionService from './services/TransactionService'
+
 function App() {
-  const [count, setCount] = useState(0)
+  const { t, locale, changeLanguage } = useLanguage()
+  const { user, signOut } = useAuth()
+  const { activeView, monthFilter, search, showModal, transactions } = useBudgetStore()
+  const dispatch = useBudgetDispatch()
+
+  const currentMonth = new Date().toISOString().slice(0, 7)
+
+  const monthTransactions = useMemo(
+    () => monthlyTransactions(transactions, currentMonth),
+    [transactions, currentMonth],
+  )
+
+  const filteredTransactions = useMemo(
+    () =>
+      filterTransactions(transactions, {
+        monthFilter,
+        currentMonth,
+        search,
+      }),
+    [transactions, monthFilter, currentMonth, search],
+  )
+
+  const summary = useMemo(() => calculateSummary(monthTransactions), [monthTransactions])
+  const budgetRows = useMemo(() => budgetService.getRows(monthTransactions), [monthTransactions])
+  const trendData = useMemo(() => calculateTrend(transactions), [transactions])
+  const reportData = useMemo(
+    () => calculateReports(monthTransactions, transactions),
+    [monthTransactions, transactions],
+  )
+
+  function toggleLanguage() {
+    changeLanguage(locale === 'es' ? 'en' : 'es')
+  }
+
+  function onSaveTransaction(input) {
+    transactionService.add(input)
+    dispatch(budgetActions.closeModal())
+  }
+
+  function onSignOut() {
+    signOut()
+    dispatch(budgetActions.setView('dashboard'))
+    dispatch(budgetActions.setSearch(''))
+    dispatch(budgetActions.setMonthFilter('current'))
+    dispatch(budgetActions.closeModal())
+  }
+
+  if (!user) {
+    return <AuthPage t={t} />
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <main className="app-shell">
+      <Header
+        appName={t.appName}
+        logo={t.logo}
+        locale={locale}
+        onToggleLanguage={toggleLanguage}
+        showLanguage
+      />
 
-      <div className="ticks"></div>
+      <div className="workspace">
+        <Sidebar
+          t={t}
+          activeView={activeView}
+          onChangeView={(view) => dispatch(budgetActions.setView(view))}
+          onSignOut={onSignOut}
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="content">
+          <header className="section-header">
+            <h2>{activeView === 'dashboard' ? t.currentMonthSummary : t[activeView]}</h2>
+          </header>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          <div className="section-body">
+            {activeView === 'dashboard' ? (
+              <DashboardView t={t} summary={summary} trendData={trendData} />
+            ) : null}
+
+            {activeView === 'transactions' ? (
+              <TransactionsView
+                t={t}
+                monthFilter={monthFilter}
+                search={search}
+                transactions={filteredTransactions}
+                onMonthFilter={(value) => dispatch(budgetActions.setMonthFilter(value))}
+                onSearch={(value) => dispatch(budgetActions.setSearch(value))}
+                onOpenModal={() => dispatch(budgetActions.openModal())}
+              />
+            ) : null}
+
+            {activeView === 'budgets' ? <BudgetsView t={t} rows={budgetRows} /> : null}
+            {activeView === 'reports' ? <ReportsView t={t} reportData={reportData} /> : null}
+          </div>
+        </section>
+      </div>
+
+      {showModal ? (
+        <TransactionModal
+          t={t}
+          onClose={() => dispatch(budgetActions.closeModal())}
+          onSave={onSaveTransaction}
+        />
+      ) : null}
+    </main>
   )
 }
 
