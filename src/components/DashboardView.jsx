@@ -1,6 +1,25 @@
-import { formatCurrency } from '../services/financeService'
+import { useMemo } from 'react'
+import { useSelector } from 'react-redux'
+import { useLanguage } from '../contexts/LanguageContext'
+import {
+  calculateSummary,
+  calculateTrend,
+  formatCurrency,
+  monthlyTransactions,
+} from '../services/financeService'
 
-export default function DashboardView({ t, summary, trendData }) {
+export default function DashboardView() {
+  const { t } = useLanguage()
+  const { transactions } = useSelector((state) => state.budget)
+  const currentMonth = new Date().toISOString().slice(0, 7)
+
+  const monthTransactions = useMemo(
+    () => monthlyTransactions(transactions, currentMonth),
+    [transactions, currentMonth],
+  )
+  const summary = useMemo(() => calculateSummary(monthTransactions), [monthTransactions])
+  const trendData = useMemo(() => calculateTrend(transactions), [transactions])
+
   return (
     <>
       <section className="panel summary-grid fade-up">

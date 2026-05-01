@@ -4,21 +4,18 @@ import { Provider } from 'react-redux'
 
 import './index.css'
 import App from './App'
-import ErrorBoundary from './components/ErrorBoundary'
 import { AuthProvider } from './contexts/AuthContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { store } from './store/store'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ErrorBoundary>
+    <Provider store={store}>
       <LanguageProvider>
         <AuthProvider>
-          <Provider store={store}>
-            <App />
-          </Provider>
+          <App />
         </AuthProvider>
       </LanguageProvider>
-    </ErrorBoundary>
+    </Provider>
   </StrictMode>,
 )

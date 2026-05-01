@@ -1,19 +1,19 @@
+import { NavLink } from 'react-router-dom'
 import { MENU_ITEMS } from '../entities/entities'
 
-export default function Sidebar({ t, activeView, onChangeView, onSignOut }) {
+export default function Sidebar({ t, onSignOut }) {
   return (
     <aside className="sidebar">
       <h2>{t.sidebarTitle}</h2>
       <nav>
         {MENU_ITEMS.map((item) => (
-          <button
+          <NavLink
             key={item}
-            type="button"
-            className={activeView === item ? 'menu-item active' : 'menu-item'}
-            onClick={() => onChangeView(item)}
+            to={`/${item}`}
+            className={({ isActive }) => (isActive ? 'menu-item active' : 'menu-item')}
           >
             {t[item]}
-          </button>
+          </NavLink>
         ))}
       </nav>
       <button type="button" className="logout" onClick={onSignOut}>

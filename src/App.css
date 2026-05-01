@@ -381,6 +381,46 @@ td {
   justify-content: end;
 }
 
+.not-found {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.not-found h1 {
+  font-size: clamp(4rem, 10vw, 8rem);
+  margin: 0;
+  color: var(--accent);
+}
+
+.not-found a {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+/* NavLink active state (replaces button-based .active) */
+a.menu-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  text-align: left;
+  border: 1px solid transparent;
+  font-size: 1.28rem;
+  padding: 0.5rem;
+}
+
+a.menu-item:hover {
+  border-color: var(--line);
+  background: rgba(50, 137, 112, 0.08);
+}
+
+a.menu-item.active {
+  border-color: var(--line-strong);
+  font-weight: 700;
+}
+
 .row-actions {
   white-space: nowrap;
   display: flex;

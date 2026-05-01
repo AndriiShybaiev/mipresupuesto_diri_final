@@ -72,21 +72,22 @@ export const removeTransaction = createAsyncThunk(
 
 const initialState = {
   // UI
-  activeView: 'dashboard',
-  monthFilter: 'current',
-  search: '',
   showModal: false,
   editingTransaction: null,
+
+  // Filters (shared across components)
+  monthFilter: 'current',
+  search: '',
 
   // Data
   transactions: [],
   transactionsStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  transactionsLoading: false,  // initial subscription loading
+  transactionsLoading: false,
   transactionsError: null,
 
   // Mutation feedback (add / update / remove)
-  isMutating: false,           // true while a CRUD operation is in flight
-  statusMessage: undefined,    // shown to the user, auto-dismissed in UI
+  isMutating: false,
+  statusMessage: undefined,
 
   // Non-serializable (serializableCheck disabled in store)
   transactionsUnsubscribe: undefined,
@@ -96,9 +97,6 @@ const budgetSlice = createSlice({
   name: 'budget',
   initialState,
   reducers: {
-    setView(state, action) {
-      state.activeView = action.payload
-    },
     setMonthFilter(state, action) {
       state.monthFilter = action.payload
     },
@@ -208,7 +206,6 @@ const budgetSlice = createSlice({
 })
 
 export const {
-  setView,
   setMonthFilter,
   setSearch,
   openModal,

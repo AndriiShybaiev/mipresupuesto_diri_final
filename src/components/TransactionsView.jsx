@@ -1,22 +1,29 @@
-import { categoryLabel, formatCurrency } from '../services/financeService'
+import { useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useLanguage } from '../contexts/LanguageContext'
+import { budgetActions, removeTransaction } from '../store/budgetSlice'
+import { categoryLabel, filterTransactions, formatCurrency } from '../services/financeService'
 
-export default function TransactionsView({
-  t,
-  monthFilter,
-  search,
-  transactions,
-  onMonthFilter,
-  onSearch,
-  onOpenModal,
-  onEdit,
-  onDelete,
-}) {
+export default function TransactionsView() {
+  const { t } = useLanguage()
+  const dispatch = useDispatch()
+  const { monthFilter, search, transactions } = useSelector((state) => state.budget)
+  const currentMonth = new Date().toISOString().slice(0, 7)
+
+  const filteredTransactions = useMemo(
+    () => filterTransactions(transactions, { monthFilter, currentMonth, search }),
+    [transactions, monthFilter, currentMonth, search],
+  )
+
   return (
     <section className="panel fade-up">
       <div className="filters-row">
         <div>
           <label>{t.monthFilter}</label>
-          <select value={monthFilter} onChange={(event) => onMonthFilter(event.target.value)}>
+          <select
+            value={monthFilter}
+            onChange={(e) => dispatch(budgetActions.setMonthFilter(e.target.value))}
+          >
             <option value="current">{t.monthCurrent}</option>
             <option value="all">{t.monthAll}</option>
           </select>
@@ -27,12 +34,12 @@ export default function TransactionsView({
           <input
             type="text"
             value={search}
-            onChange={(event) => onSearch(event.target.value)}
+            onChange={(e) => dispatch(budgetActions.setSearch(e.target.value))}
             placeholder={`${t.search}...`}
           />
         </div>
 
-        <button type="button" className="primary" onClick={onOpenModal}>
+        <button type="button" className="primary" onClick={() => dispatch(budgetActions.openModal())}>
           {t.addTransaction}
         </button>
       </div>
@@ -49,7 +56,7 @@ export default function TransactionsView({
             </tr>
           </thead>
           <tbody>
-            {transactions.map((item) => (
+            {filteredTransactions.map((item) => (
               <tr key={item.id}>
                 <td>{item.date}</td>
                 <td>{item.concept}</td>
@@ -61,14 +68,14 @@ export default function TransactionsView({
                   <button
                     type="button"
                     className="action-btn edit-btn"
-                    onClick={() => onEdit(item)}
+                    onClick={() => dispatch(budgetActions.openEditModal(item))}
                   >
                     {t.edit}
                   </button>
                   <button
                     type="button"
                     className="action-btn delete-btn"
-                    onClick={() => onDelete(item.id)}
+                    onClick={() => dispatch(removeTransaction({ id: item.id }))}
                   >
                     {t.delete}
                   </button>
@@ -78,7 +85,9 @@ export default function TransactionsView({
           </tbody>
         </table>
 
-        {transactions.length === 0 ? <p className="empty">{t.noTransactions}</p> : null}
+        {filteredTransactions.length === 0 ? (
+          <p className="empty">{t.noTransactions}</p>
+        ) : null}
       </div>
     </section>
   )

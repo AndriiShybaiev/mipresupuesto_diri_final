@@ -1,11 +1,22 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
 import './App.css'
 
 import AuthPage from './components/AuthPage'
 import BudgetsView from './components/BudgetsView'
 import DashboardView from './components/DashboardView'
+import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Header'
+import NotFound from './components/NotFound'
 import ReportsView from './components/ReportsView'
 import Sidebar from './components/Sidebar'
 import TransactionModal from './components/TransactionModal'
@@ -20,87 +31,53 @@ import {
   stopTransactionsSubscription,
   addTransaction,
   updateTransaction,
-  removeTransaction,
 } from './store/budgetSlice'
-
-import budgetService from './services/BudgetService'
-import {
-  calculateReports,
-  calculateSummary,
-  calculateTrend,
-  filterTransactions,
-  monthlyTransactions,
-} from './services/financeService'
 
 const STATUS_DISMISS_MS = 3000
 
-function App() {
+// ─── ProtectedRoute ───────────────────────────────────────────────────────────
+// Redirects to /login if the user is not authenticated (AC 8.1 pattern)
+function ProtectedRoute() {
+  const { user } = useAuth()
+  if (!user) return <Navigate to="/login" replace />
+  return <Outlet />
+}
+
+// ─── Section title ────────────────────────────────────────────────────────────
+function SectionTitle({ t }) {
+  const { pathname } = useLocation()
+  const key = pathname.replace('/', '') || 'dashboard'
+  return key === 'dashboard' ? t.currentMonthSummary : (t[key] ?? key)
+}
+
+// ─── App layout (authenticated shell) ────────────────────────────────────────
+function AppLayout() {
   const { t, locale, changeLanguage } = useLanguage()
-  const { user, signOut } = useAuth()
+  const { signOut, user } = useAuth()
   const {
-    activeView,
-    monthFilter,
-    search,
     showModal,
     editingTransaction,
-    transactions,
     transactionsLoading,
     transactionsError,
     isMutating,
     statusMessage,
   } = useSelector((state) => state.budget)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
-  const currentMonth = new Date().toISOString().slice(0, 7)
-
-  // Subscribe to transactions when user is authenticated
+  // Subscribe to Firebase transactions when user is present
   useEffect(() => {
     if (!user) return
-
     dispatch(startTransactionsSubscription())
-
-    return () => {
-      dispatch(stopTransactionsSubscription())
-    }
+    return () => { dispatch(stopTransactionsSubscription()) }
   }, [dispatch, user])
 
   // Auto-dismiss statusMessage after 3 seconds
   useEffect(() => {
     if (!statusMessage) return
-
-    const timer = setTimeout(() => {
-      dispatch(clearStatusMessage())
-    }, STATUS_DISMISS_MS)
-
+    const timer = setTimeout(() => dispatch(clearStatusMessage()), STATUS_DISMISS_MS)
     return () => clearTimeout(timer)
   }, [statusMessage, dispatch])
-
-  const monthTransactions = useMemo(
-    () => monthlyTransactions(transactions, currentMonth),
-    [transactions, currentMonth],
-  )
-
-  const filteredTransactions = useMemo(
-    () =>
-      filterTransactions(transactions, {
-        monthFilter,
-        currentMonth,
-        search,
-      }),
-    [transactions, monthFilter, currentMonth, search],
-  )
-
-  const summary = useMemo(() => calculateSummary(monthTransactions), [monthTransactions])
-  const budgetRows = useMemo(() => budgetService.getRows(monthTransactions), [monthTransactions])
-  const trendData = useMemo(() => calculateTrend(transactions), [transactions])
-  const reportData = useMemo(
-    () => calculateReports(monthTransactions, transactions),
-    [monthTransactions, transactions],
-  )
-
-  function toggleLanguage() {
-    changeLanguage(locale === 'es' ? 'en' : 'es')
-  }
 
   function onSaveTransaction(input) {
     if (editingTransaction) {
@@ -113,14 +90,10 @@ function App() {
 
   async function onSignOut() {
     await signOut()
-    dispatch(budgetActions.setView('dashboard'))
-    dispatch(budgetActions.setSearch(''))
     dispatch(budgetActions.setMonthFilter('current'))
+    dispatch(budgetActions.setSearch(''))
     dispatch(budgetActions.closeModal())
-  }
-
-  if (!user) {
-    return <AuthPage t={t} />
+    navigate('/login')
   }
 
   return (
@@ -129,58 +102,33 @@ function App() {
         appName={t.appName}
         logo={t.logo}
         locale={locale}
-        onToggleLanguage={toggleLanguage}
+        onToggleLanguage={() => changeLanguage(locale === 'es' ? 'en' : 'es')}
         showLanguage
       />
 
       <div className="workspace">
-        <Sidebar
-          t={t}
-          activeView={activeView}
-          onChangeView={(view) => dispatch(budgetActions.setView(view))}
-          onSignOut={onSignOut}
-        />
+        <Sidebar t={t} onSignOut={onSignOut} />
 
         <section className="content">
           <header className="section-header">
-            <h2>{activeView === 'dashboard' ? t.currentMonthSummary : t[activeView]}</h2>
+            <h2><SectionTitle t={t} /></h2>
           </header>
 
           <div className="section-body">
             {transactionsLoading && (
               <p className="status-msg loading">{t.loading}</p>
             )}
-
             {transactionsError && (
               <p className="status-msg error">{transactionsError}</p>
             )}
-
             {statusMessage && (
               <p className={`status-msg${statusMessage.startsWith('Error') ? ' error' : ''}`}>
                 {statusMessage}
               </p>
             )}
 
-            {activeView === 'dashboard' ? (
-              <DashboardView t={t} summary={summary} trendData={trendData} />
-            ) : null}
-
-            {activeView === 'transactions' ? (
-              <TransactionsView
-                t={t}
-                monthFilter={monthFilter}
-                search={search}
-                transactions={filteredTransactions}
-                onMonthFilter={(value) => dispatch(budgetActions.setMonthFilter(value))}
-                onSearch={(value) => dispatch(budgetActions.setSearch(value))}
-                onOpenModal={() => dispatch(budgetActions.openModal())}
-                onEdit={(tx) => dispatch(budgetActions.openEditModal(tx))}
-                onDelete={(id) => dispatch(removeTransaction({ id }))}
-              />
-            ) : null}
-
-            {activeView === 'budgets' ? <BudgetsView t={t} rows={budgetRows} /> : null}
-            {activeView === 'reports' ? <ReportsView t={t} reportData={reportData} /> : null}
+            {/* AC 5.1 — Outlet renders the matched child route */}
+            <Outlet />
           </div>
         </section>
       </div>
@@ -195,6 +143,34 @@ function App() {
         />
       ) : null}
     </main>
+  )
+}
+
+// ─── App root ─────────────────────────────────────────────────────────────────
+function App() {
+  return (
+    <BrowserRouter>
+      <ErrorBoundary>
+        <Routes>
+          {/* Public route */}
+          <Route path="/login" element={<AuthPage />} />
+
+          {/* Protected routes — wrapped in ProtectedRoute (renders Outlet or redirects) */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<DashboardView />} />
+              <Route path="/transactions" element={<TransactionsView />} />
+              <Route path="/budgets" element={<BudgetsView />} />
+              <Route path="/reports" element={<ReportsView />} />
+            </Route>
+          </Route>
+
+          {/* AC 1.6 — 404 Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </ErrorBoundary>
+    </BrowserRouter>
   )
 }
 

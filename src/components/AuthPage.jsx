@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import Header from './Header'
 
 const INITIAL_FORM = {
@@ -8,11 +10,13 @@ const INITIAL_FORM = {
   fullName: '',
 }
 
-export default function AuthPage({ t }) {
+export default function AuthPage() {
+  const { t } = useLanguage()
   const [authMode, setAuthMode] = useState('login')
   const [form, setForm] = useState(INITIAL_FORM)
   const [error, setError] = useState('')
   const { signIn, register } = useAuth()
+  const navigate = useNavigate()
 
   function updateField(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -39,6 +43,7 @@ export default function AuthPage({ t }) {
       } else {
         await register({ email: form.email, password: form.password, name: form.fullName })
       }
+      navigate('/dashboard')
     } catch (submitError) {
       setError(submitError.message || 'Authentication failed')
     }

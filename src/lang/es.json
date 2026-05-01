@@ -51,5 +51,7 @@
   "categoryTransport": "Transporte",
   "categorySalary": "Nomina",
   "overBudget": "Sobre presupuesto",
-  "available": "Disponible"
+  "available": "Disponible",
+  "notFound": "Pagina no encontrada",
+  "goHome": "Ir al Dashboard"
 }
