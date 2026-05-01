@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import './App.css'
 
 import AuthPage from './components/AuthPage'
@@ -12,8 +13,12 @@ import TransactionsView from './components/TransactionsView'
 
 import { useAuth } from './contexts/AuthContext'
 import { useLanguage } from './contexts/LanguageContext'
-import { budgetActions } from './store/budgetSlice'
-import { useBudgetDispatch, useBudgetStore } from './store/store'
+import {
+  budgetActions,
+  startTransactionsSubscription,
+  stopTransactionsSubscription,
+  addTransaction,
+} from './store/budgetSlice'
 
 import budgetService from './services/BudgetService'
 import {
@@ -23,15 +28,23 @@ import {
   filterTransactions,
   monthlyTransactions,
 } from './services/financeService'
-import transactionService from './services/TransactionService'
 
 function App() {
   const { t, locale, changeLanguage } = useLanguage()
   const { user, signOut } = useAuth()
-  const { activeView, monthFilter, search, showModal, transactions } = useBudgetStore()
-  const dispatch = useBudgetDispatch()
+  const { activeView, monthFilter, search, showModal, transactions } = useSelector(
+    (state) => state.budget,
+  )
+  const dispatch = useDispatch()
 
   const currentMonth = new Date().toISOString().slice(0, 7)
+
+  useEffect(() => {
+    dispatch(startTransactionsSubscription())
+    return () => {
+      dispatch(stopTransactionsSubscription())
+    }
+  }, [dispatch])
 
   const monthTransactions = useMemo(
     () => monthlyTransactions(transactions, currentMonth),
@@ -61,7 +74,7 @@ function App() {
   }
 
   function onSaveTransaction(input) {
-    transactionService.add(input)
+    dispatch(addTransaction(input))
     dispatch(budgetActions.closeModal())
   }
 
