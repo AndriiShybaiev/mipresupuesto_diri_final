@@ -18,6 +18,8 @@ import {
   startTransactionsSubscription,
   stopTransactionsSubscription,
   addTransaction,
+  updateTransaction,
+  removeTransaction,
 } from './store/budgetSlice'
 
 import budgetService from './services/BudgetService'
@@ -32,9 +34,17 @@ import {
 function App() {
   const { t, locale, changeLanguage } = useLanguage()
   const { user, signOut } = useAuth()
-  const { activeView, monthFilter, search, showModal, transactions } = useSelector(
-    (state) => state.budget,
-  )
+  const {
+    activeView,
+    monthFilter,
+    search,
+    showModal,
+    editingTransaction,
+    transactions,
+    transactionsLoading,
+    transactionsError,
+    statusMessage,
+  } = useSelector((state) => state.budget)
   const dispatch = useDispatch()
 
   const currentMonth = new Date().toISOString().slice(0, 7)
@@ -77,7 +87,11 @@ function App() {
   }
 
   function onSaveTransaction(input) {
-    dispatch(addTransaction(input))
+    if (editingTransaction) {
+      dispatch(updateTransaction({ id: editingTransaction.id, input }))
+    } else {
+      dispatch(addTransaction(input))
+    }
     dispatch(budgetActions.closeModal())
   }
 
@@ -117,6 +131,18 @@ function App() {
           </header>
 
           <div className="section-body">
+            {transactionsLoading && (
+              <p className="status-msg loading">{t.loading ?? 'Loading...'}</p>
+            )}
+
+            {transactionsError && (
+              <p className="status-msg error">{transactionsError}</p>
+            )}
+
+            {statusMessage && !transactionsLoading && !transactionsError && (
+              <p className="status-msg">{statusMessage}</p>
+            )}
+
             {activeView === 'dashboard' ? (
               <DashboardView t={t} summary={summary} trendData={trendData} />
             ) : null}
@@ -130,6 +156,8 @@ function App() {
                 onMonthFilter={(value) => dispatch(budgetActions.setMonthFilter(value))}
                 onSearch={(value) => dispatch(budgetActions.setSearch(value))}
                 onOpenModal={() => dispatch(budgetActions.openModal())}
+                onEdit={(tx) => dispatch(budgetActions.openEditModal(tx))}
+                onDelete={(id) => dispatch(removeTransaction({ id }))}
               />
             ) : null}
 
@@ -142,6 +170,7 @@ function App() {
       {showModal ? (
         <TransactionModal
           t={t}
+          initialValues={editingTransaction}
           onClose={() => dispatch(budgetActions.closeModal())}
           onSave={onSaveTransaction}
         />

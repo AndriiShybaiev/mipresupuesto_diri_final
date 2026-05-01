@@ -36,7 +36,32 @@ export const addTransaction = createAsyncThunk(
   'budget/addTransaction',
   async (input, thunkApi) => {
     try {
+      logger.info(`UI: add transaction; concept=${input.concept}`)
       await transactionService.add(input)
+    } catch (e) {
+      return thunkApi.rejectWithValue(String(e))
+    }
+  },
+)
+
+export const updateTransaction = createAsyncThunk(
+  'budget/updateTransaction',
+  async ({ id, input }, thunkApi) => {
+    try {
+      logger.info(`UI: update transaction; id=${id}`)
+      await transactionService.update(id, input)
+    } catch (e) {
+      return thunkApi.rejectWithValue(String(e))
+    }
+  },
+)
+
+export const removeTransaction = createAsyncThunk(
+  'budget/removeTransaction',
+  async ({ id }, thunkApi) => {
+    try {
+      logger.warn(`UI: remove transaction; id=${id}`)
+      await transactionService.remove(id)
     } catch (e) {
       return thunkApi.rejectWithValue(String(e))
     }
@@ -51,6 +76,7 @@ const initialState = {
   monthFilter: 'current',
   search: '',
   showModal: false,
+  editingTransaction: null, // { id, ...fields } — transaction being edited
 
   // Data
   transactions: [],
@@ -61,7 +87,7 @@ const initialState = {
   // User feedback
   statusMessage: undefined,
 
-  // Stored unsubscribe fn (non-serializable, serializableCheck disabled in store)
+  // Non-serializable (serializableCheck disabled in store)
   transactionsUnsubscribe: undefined,
 }
 
@@ -80,9 +106,15 @@ const budgetSlice = createSlice({
     },
     openModal(state) {
       state.showModal = true
+      state.editingTransaction = null
     },
     closeModal(state) {
       state.showModal = false
+      state.editingTransaction = null
+    },
+    openEditModal(state, action) {
+      state.editingTransaction = action.payload
+      state.showModal = true
     },
 
     transactionsSubscriptionStarted(state, action) {
@@ -117,6 +149,7 @@ const budgetSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
+      // ── subscribe ──────────────────────────────────────────────────────────
       .addCase(startTransactionsSubscription.pending, (state) => {
         state.transactionsStatus = 'loading'
         state.transactionsLoading = true
@@ -129,6 +162,8 @@ const budgetSlice = createSlice({
         state.transactionsError = action.payload ?? action.error.message ?? 'Unknown error'
         state.statusMessage = 'Failed to subscribe to transactions.'
       })
+
+      // ── add ────────────────────────────────────────────────────────────────
       .addCase(addTransaction.pending, (state) => {
         state.statusMessage = 'Saving transaction...'
       })
@@ -136,7 +171,29 @@ const budgetSlice = createSlice({
         state.statusMessage = 'Transaction saved.'
       })
       .addCase(addTransaction.rejected, (state, action) => {
-        state.statusMessage = `Failed to save transaction: ${action.payload ?? action.error.message}`
+        state.statusMessage = `Failed to save: ${action.payload ?? action.error.message}`
+      })
+
+      // ── update ─────────────────────────────────────────────────────────────
+      .addCase(updateTransaction.pending, (state) => {
+        state.statusMessage = 'Updating transaction...'
+      })
+      .addCase(updateTransaction.fulfilled, (state) => {
+        state.statusMessage = 'Transaction updated.'
+      })
+      .addCase(updateTransaction.rejected, (state, action) => {
+        state.statusMessage = `Failed to update: ${action.payload ?? action.error.message}`
+      })
+
+      // ── remove ─────────────────────────────────────────────────────────────
+      .addCase(removeTransaction.pending, (state) => {
+        state.statusMessage = 'Deleting transaction...'
+      })
+      .addCase(removeTransaction.fulfilled, (state) => {
+        state.statusMessage = 'Transaction deleted.'
+      })
+      .addCase(removeTransaction.rejected, (state, action) => {
+        state.statusMessage = `Failed to delete: ${action.payload ?? action.error.message}`
       })
   },
 })
@@ -147,6 +204,7 @@ export const {
   setSearch,
   openModal,
   closeModal,
+  openEditModal,
   transactionsSubscriptionStarted,
   transactionsSubscriptionStopped,
   transactionsReceived,
