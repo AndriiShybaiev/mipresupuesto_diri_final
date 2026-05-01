@@ -1,4 +1,4 @@
-import { LocalAuthService } from './LocalAuthService'
+import { FirebaseAuthService } from './FirebaseAuthService'
 
-const authService = new LocalAuthService()
+const authService = new FirebaseAuthService()
 export default authService

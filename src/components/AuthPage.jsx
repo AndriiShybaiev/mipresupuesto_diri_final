@@ -24,7 +24,7 @@ export default function AuthPage({ t }) {
     setAuthMode((prev) => (prev === 'login' ? 'register' : 'login'))
   }
 
-  function onSubmit(event) {
+  async function onSubmit(event) {
     event.preventDefault()
     setError('')
 
@@ -35,9 +35,9 @@ export default function AuthPage({ t }) {
 
     try {
       if (authMode === 'login') {
-        signIn({ email: form.email, password: form.password })
+        await signIn({ email: form.email, password: form.password })
       } else {
-        register({ email: form.email, password: form.password, name: form.fullName })
+        await register({ email: form.email, password: form.password, name: form.fullName })
       }
     } catch (submitError) {
       setError(submitError.message || 'Authentication failed')

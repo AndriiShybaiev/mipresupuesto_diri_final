@@ -40,11 +40,14 @@ function App() {
   const currentMonth = new Date().toISOString().slice(0, 7)
 
   useEffect(() => {
+    if (!user) return
+
     dispatch(startTransactionsSubscription())
+
     return () => {
       dispatch(stopTransactionsSubscription())
     }
-  }, [dispatch])
+  }, [dispatch, user])
 
   const monthTransactions = useMemo(
     () => monthlyTransactions(transactions, currentMonth),
@@ -78,8 +81,8 @@ function App() {
     dispatch(budgetActions.closeModal())
   }
 
-  function onSignOut() {
-    signOut()
+  async function onSignOut() {
+    await signOut()
     dispatch(budgetActions.setView('dashboard'))
     dispatch(budgetActions.setSearch(''))
     dispatch(budgetActions.setMonthFilter('current'))

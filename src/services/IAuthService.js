@@ -18,4 +18,8 @@ export class IAuthService {
   onAuthStateChanged(_callback) {
     throw new Error('onAuthStateChanged must be implemented')
   }
+
+  getUserRoles(_user) {
+    throw new Error('getUserRoles must be implemented')
+  }
 }

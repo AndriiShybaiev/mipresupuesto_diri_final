@@ -1,4 +1,4 @@
-import { LocalTransactionService } from './LocalTransactionService'
+import { FirebaseTransactionService } from './FirebaseTransactionService'
 
-const transactionService = new LocalTransactionService()
+const transactionService = new FirebaseTransactionService()
 export default transactionService
