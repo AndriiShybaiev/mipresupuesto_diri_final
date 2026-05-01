@@ -381,6 +381,35 @@ td {
   justify-content: end;
 }
 
+.row-actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.action-btn {
+  min-height: unset;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.82rem;
+  border: 1px solid var(--line);
+  background: var(--bg-plain);
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: rgba(45, 126, 102, 0.12);
+  border-color: var(--accent);
+}
+
+.delete-btn {
+  color: #8a3f2b;
+  border-color: #e8b3a3;
+}
+
+.delete-btn:hover {
+  background: #fff0ed;
+}
+
 .status-msg {
   margin: 0;
   padding: 0.5rem 0.75rem;

@@ -8,6 +8,8 @@ export default function TransactionsView({
   onMonthFilter,
   onSearch,
   onOpenModal,
+  onEdit,
+  onDelete,
 }) {
   return (
     <section className="panel fade-up">
@@ -22,7 +24,12 @@ export default function TransactionsView({
 
         <div>
           <label>{t.search}</label>
-          <input type="text" value={search} onChange={(event) => onSearch(event.target.value)} placeholder={`${t.search}...`} />
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            placeholder={`${t.search}...`}
+          />
         </div>
 
         <button type="button" className="primary" onClick={onOpenModal}>
@@ -38,6 +45,7 @@ export default function TransactionsView({
               <th>{t.concept}</th>
               <th>{t.category}</th>
               <th>{t.amount}</th>
+              <th>{t.actions}</th>
             </tr>
           </thead>
           <tbody>
@@ -48,6 +56,22 @@ export default function TransactionsView({
                 <td>{categoryLabel(item.category, t)}</td>
                 <td className={item.category === 'income' ? 'income' : 'expense'}>
                   {item.category === 'income' ? '+' : '-'} {formatCurrency(item.amount)}
+                </td>
+                <td className="row-actions">
+                  <button
+                    type="button"
+                    className="action-btn edit-btn"
+                    onClick={() => onEdit(item)}
+                  >
+                    {t.edit}
+                  </button>
+                  <button
+                    type="button"
+                    className="action-btn delete-btn"
+                    onClick={() => onDelete(item.id)}
+                  >
+                    {t.delete}
+                  </button>
                 </td>
               </tr>
             ))}

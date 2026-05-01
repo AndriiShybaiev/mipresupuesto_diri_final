@@ -1,15 +1,31 @@
 import { useState } from 'react'
 import { INITIAL_NEW_TRANSACTION } from '../entities/entities'
 
-function freshTransaction() {
+function buildInitialForm(initialValues) {
+  if (!initialValues) {
+    return {
+      ...INITIAL_NEW_TRANSACTION,
+      date: new Date().toISOString().slice(0, 10),
+    }
+  }
+
+  // Derive type from category for edit mode
+  const type = initialValues.category === 'income' ? 'income' : 'expense'
+  const category = type === 'income' ? INITIAL_NEW_TRANSACTION.category : initialValues.category
+
   return {
-    ...INITIAL_NEW_TRANSACTION,
-    date: new Date().toISOString().slice(0, 10),
+    date: initialValues.date ?? new Date().toISOString().slice(0, 10),
+    concept: initialValues.concept ?? '',
+    type,
+    category,
+    amount: initialValues.amount ?? '',
   }
 }
 
-export default function TransactionModal({ t, onClose, onSave }) {
-  const [form, setForm] = useState(freshTransaction())
+export default function TransactionModal({ t, initialValues, onClose, onSave }) {
+  const [form, setForm] = useState(() => buildInitialForm(initialValues))
+
+  const isEditing = Boolean(initialValues)
 
   function updateField(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -35,16 +51,24 @@ export default function TransactionModal({ t, onClose, onSave }) {
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true">
       <form className="modal-card" onSubmit={onSubmit}>
-        <h3>{t.addMovement}</h3>
+        <h3>{isEditing ? t.editMovement : t.addMovement}</h3>
 
         <label>
           <span>{t.date}</span>
-          <input type="date" value={form.date} onChange={(event) => updateField('date', event.target.value)} />
+          <input
+            type="date"
+            value={form.date}
+            onChange={(event) => updateField('date', event.target.value)}
+          />
         </label>
 
         <label>
           <span>{t.concept}</span>
-          <input type="text" value={form.concept} onChange={(event) => updateField('concept', event.target.value)} />
+          <input
+            type="text"
+            value={form.concept}
+            onChange={(event) => updateField('concept', event.target.value)}
+          />
         </label>
 
         <label>
@@ -58,7 +82,10 @@ export default function TransactionModal({ t, onClose, onSave }) {
         {form.type === 'expense' ? (
           <label>
             <span>{t.category}</span>
-            <select value={form.category} onChange={(event) => updateField('category', event.target.value)}>
+            <select
+              value={form.category}
+              onChange={(event) => updateField('category', event.target.value)}
+            >
               <option value="food">{t.categoryFood}</option>
               <option value="home">{t.categoryHome}</option>
               <option value="leisure">{t.categoryLeisure}</option>
