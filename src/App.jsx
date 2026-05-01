@@ -15,6 +15,7 @@ import { useAuth } from './contexts/AuthContext'
 import { useLanguage } from './contexts/LanguageContext'
 import {
   budgetActions,
+  clearStatusMessage,
   startTransactionsSubscription,
   stopTransactionsSubscription,
   addTransaction,
@@ -31,6 +32,8 @@ import {
   monthlyTransactions,
 } from './services/financeService'
 
+const STATUS_DISMISS_MS = 3000
+
 function App() {
   const { t, locale, changeLanguage } = useLanguage()
   const { user, signOut } = useAuth()
@@ -43,12 +46,14 @@ function App() {
     transactions,
     transactionsLoading,
     transactionsError,
+    isMutating,
     statusMessage,
   } = useSelector((state) => state.budget)
   const dispatch = useDispatch()
 
   const currentMonth = new Date().toISOString().slice(0, 7)
 
+  // Subscribe to transactions when user is authenticated
   useEffect(() => {
     if (!user) return
 
@@ -58,6 +63,17 @@ function App() {
       dispatch(stopTransactionsSubscription())
     }
   }, [dispatch, user])
+
+  // Auto-dismiss statusMessage after 3 seconds
+  useEffect(() => {
+    if (!statusMessage) return
+
+    const timer = setTimeout(() => {
+      dispatch(clearStatusMessage())
+    }, STATUS_DISMISS_MS)
+
+    return () => clearTimeout(timer)
+  }, [statusMessage, dispatch])
 
   const monthTransactions = useMemo(
     () => monthlyTransactions(transactions, currentMonth),
@@ -132,15 +148,17 @@ function App() {
 
           <div className="section-body">
             {transactionsLoading && (
-              <p className="status-msg loading">{t.loading ?? 'Loading...'}</p>
+              <p className="status-msg loading">{t.loading}</p>
             )}
 
             {transactionsError && (
               <p className="status-msg error">{transactionsError}</p>
             )}
 
-            {statusMessage && !transactionsLoading && !transactionsError && (
-              <p className="status-msg">{statusMessage}</p>
+            {statusMessage && (
+              <p className={`status-msg${statusMessage.startsWith('Error') ? ' error' : ''}`}>
+                {statusMessage}
+              </p>
             )}
 
             {activeView === 'dashboard' ? (
@@ -171,6 +189,7 @@ function App() {
         <TransactionModal
           t={t}
           initialValues={editingTransaction}
+          isMutating={isMutating}
           onClose={() => dispatch(budgetActions.closeModal())}
           onSave={onSaveTransaction}
         />

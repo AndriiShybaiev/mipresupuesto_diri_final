@@ -22,7 +22,7 @@ function buildInitialForm(initialValues) {
   }
 }
 
-export default function TransactionModal({ t, initialValues, onClose, onSave }) {
+export default function TransactionModal({ t, initialValues, isMutating, onClose, onSave }) {
   const [form, setForm] = useState(() => buildInitialForm(initialValues))
 
   const isEditing = Boolean(initialValues)
@@ -107,10 +107,10 @@ export default function TransactionModal({ t, initialValues, onClose, onSave }) 
         </label>
 
         <div className="modal-actions">
-          <button type="submit" className="primary">
-            {t.save}
+          <button type="submit" className="primary" disabled={isMutating}>
+            {isMutating ? `${t.save}...` : t.save}
           </button>
-          <button type="button" className="ghost" onClick={onClose}>
+          <button type="button" className="ghost" onClick={onClose} disabled={isMutating}>
             {t.cancel}
           </button>
         </div>

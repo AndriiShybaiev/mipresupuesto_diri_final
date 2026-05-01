@@ -76,16 +76,17 @@ const initialState = {
   monthFilter: 'current',
   search: '',
   showModal: false,
-  editingTransaction: null, // { id, ...fields } — transaction being edited
+  editingTransaction: null,
 
   // Data
   transactions: [],
   transactionsStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  transactionsLoading: false,
+  transactionsLoading: false,  // initial subscription loading
   transactionsError: null,
 
-  // User feedback
-  statusMessage: undefined,
+  // Mutation feedback (add / update / remove)
+  isMutating: false,           // true while a CRUD operation is in flight
+  statusMessage: undefined,    // shown to the user, auto-dismissed in UI
 
   // Non-serializable (serializableCheck disabled in store)
   transactionsUnsubscribe: undefined,
@@ -116,34 +117,34 @@ const budgetSlice = createSlice({
       state.editingTransaction = action.payload
       state.showModal = true
     },
+    clearStatusMessage(state) {
+      state.statusMessage = undefined
+    },
 
+    // ── Internal subscription actions (dispatched from thunks) ──────────────
     transactionsSubscriptionStarted(state, action) {
       if (state.transactionsUnsubscribe) state.transactionsUnsubscribe()
       state.transactionsUnsubscribe = action.payload
       state.transactionsStatus = 'succeeded'
       state.transactionsLoading = false
       state.transactionsError = null
-      state.statusMessage = 'Transactions subscription started.'
     },
     transactionsSubscriptionStopped(state) {
       if (state.transactionsUnsubscribe) state.transactionsUnsubscribe()
       state.transactionsUnsubscribe = undefined
       state.transactionsStatus = 'idle'
       state.transactionsLoading = false
-      state.statusMessage = 'Transactions subscription stopped.'
     },
     transactionsReceived(state, action) {
       state.transactions = action.payload
       state.transactionsStatus = 'succeeded'
       state.transactionsLoading = false
       state.transactionsError = null
-      state.statusMessage = `Transactions updated: ${action.payload.length}`
     },
     transactionsFailed(state, action) {
       state.transactionsStatus = 'failed'
       state.transactionsLoading = false
       state.transactionsError = action.payload
-      state.statusMessage = 'Error loading transactions.'
     },
   },
 
@@ -154,46 +155,54 @@ const budgetSlice = createSlice({
         state.transactionsStatus = 'loading'
         state.transactionsLoading = true
         state.transactionsError = null
-        state.statusMessage = 'Subscribing to transactions...'
       })
       .addCase(startTransactionsSubscription.rejected, (state, action) => {
         state.transactionsStatus = 'failed'
         state.transactionsLoading = false
         state.transactionsError = action.payload ?? action.error.message ?? 'Unknown error'
-        state.statusMessage = 'Failed to subscribe to transactions.'
+        state.statusMessage = 'Failed to load transactions.'
       })
 
       // ── add ────────────────────────────────────────────────────────────────
       .addCase(addTransaction.pending, (state) => {
-        state.statusMessage = 'Saving transaction...'
+        state.isMutating = true
+        state.statusMessage = undefined
       })
       .addCase(addTransaction.fulfilled, (state) => {
+        state.isMutating = false
         state.statusMessage = 'Transaction saved.'
       })
       .addCase(addTransaction.rejected, (state, action) => {
-        state.statusMessage = `Failed to save: ${action.payload ?? action.error.message}`
+        state.isMutating = false
+        state.statusMessage = `Error: ${action.payload ?? action.error.message}`
       })
 
       // ── update ─────────────────────────────────────────────────────────────
       .addCase(updateTransaction.pending, (state) => {
-        state.statusMessage = 'Updating transaction...'
+        state.isMutating = true
+        state.statusMessage = undefined
       })
       .addCase(updateTransaction.fulfilled, (state) => {
+        state.isMutating = false
         state.statusMessage = 'Transaction updated.'
       })
       .addCase(updateTransaction.rejected, (state, action) => {
-        state.statusMessage = `Failed to update: ${action.payload ?? action.error.message}`
+        state.isMutating = false
+        state.statusMessage = `Error: ${action.payload ?? action.error.message}`
       })
 
       // ── remove ─────────────────────────────────────────────────────────────
       .addCase(removeTransaction.pending, (state) => {
-        state.statusMessage = 'Deleting transaction...'
+        state.isMutating = true
+        state.statusMessage = undefined
       })
       .addCase(removeTransaction.fulfilled, (state) => {
+        state.isMutating = false
         state.statusMessage = 'Transaction deleted.'
       })
       .addCase(removeTransaction.rejected, (state, action) => {
-        state.statusMessage = `Failed to delete: ${action.payload ?? action.error.message}`
+        state.isMutating = false
+        state.statusMessage = `Error: ${action.payload ?? action.error.message}`
       })
   },
 })
@@ -205,6 +214,7 @@ export const {
   openModal,
   closeModal,
   openEditModal,
+  clearStatusMessage,
   transactionsSubscriptionStarted,
   transactionsSubscriptionStopped,
   transactionsReceived,
