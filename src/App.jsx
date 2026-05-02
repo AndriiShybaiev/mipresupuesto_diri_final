@@ -23,6 +23,7 @@ const DashboardView = lazy(() => import('./components/DashboardView'))
 const TransactionsView = lazy(() => import('./components/TransactionsView'))
 const BudgetsView = lazy(() => import('./components/BudgetsView'))
 const ReportsView = lazy(() => import('./components/ReportsView'))
+const AdminView = lazy(() => import('./components/AdminView'))
 
 import { useAuth } from './contexts/AuthContext'
 import { useLanguage } from './contexts/LanguageContext'
@@ -45,11 +46,22 @@ function ProtectedRoute() {
   return <Outlet />
 }
 
+// ─── AdminRoute ───────────────────────────────────────────────────────────────
+// Redirects to /dashboard if the user does not have the ADMIN role (AC 8.2 pattern)
+function AdminRoute() {
+  const { roles } = useAuth()
+  if (!roles) return null
+  if (!roles.includes('ADMIN')) return <Navigate to="/dashboard" replace />
+  return <Outlet />
+}
+
 // ─── Section title ────────────────────────────────────────────────────────────
 function SectionTitle({ t }) {
   const { pathname } = useLocation()
   const key = pathname.replace('/', '') || 'dashboard'
-  return key === 'dashboard' ? t.currentMonthSummary : (t[key] ?? key)
+  if (key === 'dashboard') return t.currentMonthSummary
+  if (key === 'admin') return t.adminPanel
+  return t[key] ?? key
 }
 
 // ─── App layout (authenticated shell) ────────────────────────────────────────
@@ -167,6 +179,11 @@ function App() {
               <Route path="/transactions" element={<TransactionsView />} />
               <Route path="/budgets" element={<BudgetsView />} />
               <Route path="/reports" element={<ReportsView />} />
+
+              {/* AC 8.2 — Admin-only routes */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminView />} />
+              </Route>
             </Route>
           </Route>
 

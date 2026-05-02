@@ -53,5 +53,12 @@
   "overBudget": "Sobre presupuesto",
   "available": "Disponible",
   "notFound": "Pagina no encontrada",
-  "goHome": "Ir al Dashboard"
+  "goHome": "Ir al Dashboard",
+  "admin": "Admin",
+  "adminPanel": "Panel de administracion",
+  "adminUsers": "Usuarios registrados",
+  "adminRole": "Rol",
+  "adminName": "Nombre",
+  "adminNoUsers": "No se encontraron usuarios.",
+  "accessDenied": "Acceso denegado. Se requiere rol de administrador."
 }

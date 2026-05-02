@@ -53,5 +53,12 @@
   "overBudget": "Over budget",
   "available": "Available",
   "notFound": "Page not found",
-  "goHome": "Go to Dashboard"
+  "goHome": "Go to Dashboard",
+  "admin": "Admin",
+  "adminPanel": "Admin Panel",
+  "adminUsers": "Registered users",
+  "adminRole": "Role",
+  "adminName": "Name",
+  "adminNoUsers": "No users found.",
+  "accessDenied": "Access denied. Admin role required."
 }
