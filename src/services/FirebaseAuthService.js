@@ -46,7 +46,23 @@ export class FirebaseAuthService extends IAuthService {
 
   async getUserRoles(user) {
     if (!user) return []
-    if (user.email === 'admin@email.com') return ['ADMIN']
+    if (user.email === 'admin@email.com') {
+      // Ensure admin has a DB record so AdminView can read users/{uid}
+      try {
+        const snap = await get(ref(db, `users/${user.uid}`))
+        if (!snap.exists()) {
+          await set(ref(db, `users/${user.uid}`), {
+            email: user.email,
+            name: 'Admin',
+            roles: { admin: true },
+          })
+          logger.info('Admin DB record created')
+        }
+      } catch (e) {
+        logger.warn(`Could not create admin DB record: ${String(e)}`)
+      }
+      return ['ADMIN']
+    }
 
     try {
       const snap = await get(ref(db, `users/${user.uid}/roles`))

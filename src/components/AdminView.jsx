@@ -1,35 +1,65 @@
 import { useEffect, useState } from 'react'
 import { get, ref } from 'firebase/database'
-import { db } from '../firebaseConfig'
+import { auth, db } from '../firebaseConfig'
 import { useLanguage } from '../contexts/LanguageContext'
 import logger from '../services/logging'
+
+async function loadUsers() {
+  // Try reading the full users tree (requires permissive Firebase rules)
+  const snap = await get(ref(db, 'users'))
+  if (!snap.exists()) return []
+  const data = snap.val()
+  return Object.entries(data).map(([uid, info]) => ({
+    uid,
+    email: info.email ?? '-',
+    name: info.name ?? '-',
+    admin: info.roles?.admin === true,
+  }))
+}
+
+async function loadOwnProfile() {
+  const currentUser = auth.currentUser
+  if (!currentUser) return []
+  const snap = await get(ref(db, `users/${currentUser.uid}`))
+  if (!snap.exists()) return []
+  const info = snap.val()
+  return [{
+    uid: currentUser.uid,
+    email: info.email ?? currentUser.email,
+    name: info.name ?? 'Admin',
+    admin: info.roles?.admin === true,
+  }]
+}
 
 export default function AdminView() {
   const { t } = useLanguage()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [limited, setLimited] = useState(false)
 
   useEffect(() => {
-    get(ref(db, 'users'))
-      .then((snap) => {
-        if (!snap.exists()) {
-          setUsers([])
-          return
-        }
-        const data = snap.val()
-        const list = Object.entries(data).map(([uid, info]) => ({
-          uid,
-          email: info.email ?? '-',
-          name: info.name ?? '-',
-          admin: info.roles?.admin === true,
-        }))
+    loadUsers()
+      .then((list) => {
         logger.info(`Admin loaded ${list.length} users`)
         setUsers(list)
       })
-      .catch((e) => {
-        logger.error(`Admin fetch users failed: ${String(e)}`)
-        setError(String(e))
+      .catch(async (e) => {
+        const msg = String(e)
+        if (msg.includes('PERMISSION_DENIED')) {
+          // Firebase rules restrict reading users/ root — fall back to own profile
+          logger.warn('Admin: PERMISSION_DENIED on users/, falling back to own profile')
+          try {
+            const own = await loadOwnProfile()
+            setUsers(own)
+            setLimited(true)
+          } catch (e2) {
+            setError(String(e2))
+          }
+        } else {
+          logger.error(`Admin fetch failed: ${msg}`)
+          setError(msg)
+        }
       })
       .finally(() => setLoading(false))
   }, [])
@@ -46,6 +76,12 @@ export default function AdminView() {
       )}
       {error && (
         <p className="text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{error}</p>
+      )}
+      {limited && (
+        <p className="text-sm px-3 py-2 border border-yellow-300 bg-yellow-50 text-yellow-800 mb-3">
+          Firebase rules restrict reading all users. Showing own profile only.
+          Set <code className="font-mono bg-yellow-100 px-1">/users .read: auth != null</code> in Firebase Console for full access.
+        </p>
       )}
 
       {!loading && !error && (
