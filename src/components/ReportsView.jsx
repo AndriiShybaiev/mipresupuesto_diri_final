@@ -19,26 +19,29 @@ export default function ReportsView() {
   }, [transactions, currentMonth])
 
   return (
-    <section className="panel report-cards fade-up">
-      <article>
-        <p>{t.topExpense}</p>
-        <strong>
+    <section
+      className="grid grid-cols-3 gap-3"
+      style={{ animation: 'fadeUp 420ms ease both' }}
+    >
+      <article className="border-2 border-gray-800 bg-white p-4 shadow-sm">
+        <p className="m-0 mb-2 text-gray-500 text-sm">{t.topExpense}</p>
+        <strong className="block">
           {reportData.topExpense
             ? `${categoryLabel(reportData.topExpense[0], t)} (${formatCurrency(reportData.topExpense[1])})`
             : '-'}
         </strong>
       </article>
-      <article>
-        <p>{t.recentMovement}</p>
-        <strong>
+      <article className="border-2 border-gray-800 bg-white p-4 shadow-sm">
+        <p className="m-0 mb-2 text-gray-500 text-sm">{t.recentMovement}</p>
+        <strong className="block">
           {reportData.latest
             ? `${reportData.latest.date} - ${reportData.latest.concept} (${formatCurrency(reportData.latest.amount)})`
             : '-'}
         </strong>
       </article>
-      <article>
-        <p>{t.totalMovements}</p>
-        <strong>{reportData.movementCount}</strong>
+      <article className="border-2 border-gray-800 bg-white p-4 shadow-sm">
+        <p className="m-0 mb-2 text-gray-500 text-sm">{t.totalMovements}</p>
+        <strong className="block text-2xl">{reportData.movementCount}</strong>
       </article>
     </section>
   )

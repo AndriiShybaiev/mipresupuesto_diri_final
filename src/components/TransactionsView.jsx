@@ -16,11 +16,15 @@ export default function TransactionsView() {
   )
 
   return (
-    <section className="panel fade-up">
-      <div className="filters-row">
-        <div>
-          <label>{t.monthFilter}</label>
+    <section
+      className="border-2 border-gray-800 bg-white p-4 shadow-sm"
+      style={{ animation: 'fadeUp 420ms ease both' }}
+    >
+      <div className="grid grid-cols-[160px_1fr_auto] gap-3 mb-4 items-end">
+        <div className="grid gap-1">
+          <label className="font-semibold text-sm">{t.monthFilter}</label>
           <select
+            className="min-h-9 px-2 border border-gray-300 bg-white"
             value={monthFilter}
             onChange={(e) => dispatch(budgetActions.setMonthFilter(e.target.value))}
           >
@@ -29,65 +33,72 @@ export default function TransactionsView() {
           </select>
         </div>
 
-        <div>
-          <label>{t.search}</label>
+        <div className="grid gap-1">
+          <label className="font-semibold text-sm">{t.search}</label>
           <input
             type="text"
+            className="min-h-9 px-2 border border-gray-300 bg-white"
             value={search}
             onChange={(e) => dispatch(budgetActions.setSearch(e.target.value))}
             placeholder={`${t.search}...`}
           />
         </div>
 
-        <button type="button" className="primary" onClick={() => dispatch(budgetActions.openModal())}>
+        <button
+          type="button"
+          className="bg-teal-700 text-white border-2 border-teal-800 px-4 py-2 cursor-pointer hover:bg-teal-800 self-end"
+          onClick={() => dispatch(budgetActions.openModal())}
+        >
           {t.addTransaction}
         </button>
       </div>
 
-      <div className="table-wrap">
-        <table>
+      <div className="border border-gray-300 overflow-x-auto">
+        <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th>{t.date}</th>
-              <th>{t.concept}</th>
-              <th>{t.category}</th>
-              <th>{t.amount}</th>
-              <th>{t.actions}</th>
+              <th className="text-left bg-teal-50 px-3 py-2 border-b border-gray-300">{t.date}</th>
+              <th className="text-left bg-teal-50 px-3 py-2 border-b border-gray-300">{t.concept}</th>
+              <th className="text-left bg-teal-50 px-3 py-2 border-b border-gray-300">{t.category}</th>
+              <th className="text-left bg-teal-50 px-3 py-2 border-b border-gray-300">{t.amount}</th>
+              <th className="text-left bg-teal-50 px-3 py-2 border-b border-gray-300">{t.actions}</th>
             </tr>
           </thead>
           <tbody>
             {filteredTransactions.map((item) => (
               <tr key={item.id}>
-                <td>{item.date}</td>
-                <td>{item.concept}</td>
-                <td>{categoryLabel(item.category, t)}</td>
-                <td className={item.category === 'income' ? 'income' : 'expense'}>
+                <td className="px-3 py-2 border-b border-gray-200">{item.date}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{item.concept}</td>
+                <td className="px-3 py-2 border-b border-gray-200">{categoryLabel(item.category, t)}</td>
+                <td className={`px-3 py-2 border-b border-gray-200 font-bold ${item.category === 'income' ? 'text-teal-700' : 'text-red-700'}`}>
                   {item.category === 'income' ? '+' : '-'} {formatCurrency(item.amount)}
                 </td>
-                <td className="row-actions">
-                  <button
-                    type="button"
-                    className="action-btn edit-btn"
-                    onClick={() => dispatch(budgetActions.openEditModal(item))}
-                  >
-                    {t.edit}
-                  </button>
-                  <button
-                    type="button"
-                    className="action-btn delete-btn"
-                    onClick={() => dispatch(removeTransaction({ id: item.id }))}
-                  >
-                    {t.delete}
-                  </button>
+                <td className="px-3 py-2 border-b border-gray-200 whitespace-nowrap">
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      className="px-2 py-1 text-xs border border-gray-300 bg-white cursor-pointer hover:bg-teal-50 hover:border-teal-500"
+                      onClick={() => dispatch(budgetActions.openEditModal(item))}
+                    >
+                      {t.edit}
+                    </button>
+                    <button
+                      type="button"
+                      className="px-2 py-1 text-xs border border-red-200 text-red-700 bg-white cursor-pointer hover:bg-red-50"
+                      onClick={() => dispatch(removeTransaction({ id: item.id }))}
+                    >
+                      {t.delete}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {filteredTransactions.length === 0 ? (
-          <p className="empty">{t.noTransactions}</p>
-        ) : null}
+        {filteredTransactions.length === 0 && (
+          <p className="px-3 py-2 text-gray-500">{t.noTransactions}</p>
+        )}
       </div>
     </section>
   )

@@ -35,36 +35,47 @@ export default function AdminView() {
   }, [])
 
   return (
-    <section className="panel fade-up">
-      <h3>{t.adminPanel}</h3>
+    <section
+      className="border-2 border-gray-800 bg-white p-4 shadow-sm"
+      style={{ animation: 'fadeUp 420ms ease both' }}
+    >
+      <h3 className="text-xl font-bold m-0 mb-4">{t.adminPanel}</h3>
 
-      {loading && <p className="status-msg loading">{t.loading}</p>}
-      {error && <p className="status-msg error">{error}</p>}
+      {loading && (
+        <p className="text-sm px-3 py-2 border border-blue-300 bg-blue-50 text-blue-800">{t.loading}</p>
+      )}
+      {error && (
+        <p className="text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{error}</p>
+      )}
 
       {!loading && !error && (
         <>
-          <p>{t.adminUsers}</p>
+          <p className="text-gray-600 mb-3">{t.adminUsers}</p>
           {users.length === 0 ? (
-            <p>{t.adminNoUsers}</p>
+            <p className="text-gray-500">{t.adminNoUsers}</p>
           ) : (
-            <table className="transactions-table">
-              <thead>
-                <tr>
-                  <th>{t.adminName}</th>
-                  <th>{t.email}</th>
-                  <th>{t.adminRole}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u.uid}>
-                    <td>{u.name}</td>
-                    <td>{u.email}</td>
-                    <td>{u.admin ? 'ADMIN' : 'USER'}</td>
+            <div className="border border-gray-300 overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="text-left bg-teal-50 px-3 py-2 border-b border-gray-300">{t.adminName}</th>
+                    <th className="text-left bg-teal-50 px-3 py-2 border-b border-gray-300">{t.email}</th>
+                    <th className="text-left bg-teal-50 px-3 py-2 border-b border-gray-300">{t.adminRole}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.uid}>
+                      <td className="px-3 py-2 border-b border-gray-200">{u.name}</td>
+                      <td className="px-3 py-2 border-b border-gray-200">{u.email}</td>
+                      <td className={`px-3 py-2 border-b border-gray-200 font-bold ${u.admin ? 'text-teal-700' : 'text-gray-500'}`}>
+                        {u.admin ? 'ADMIN' : 'USER'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </>
       )}

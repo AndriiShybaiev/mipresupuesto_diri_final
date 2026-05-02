@@ -1,40 +1,13 @@
-:root {
-  --bg-plain: #fefdf8;
-  --bg-soft: #edf7f1;
-  --line: #9eb5aa;
-  --line-strong: #1f322c;
-  --text-main: #1d2723;
-  --text-soft: #43544d;
-  --accent: #2d7e66;
-  --accent-dark: #246551;
+@import "tailwindcss";
 
-  font-family: 'Sora', 'Space Grotesk', 'Trebuchet MS', sans-serif;
-  font-size: 16px;
-  line-height: 1.4;
-  font-weight: 400;
-  color: var(--text-main);
-  background: radial-gradient(circle at 20% 0%, #f4fbf7 0, #fefdf8 46%);
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* AC 9.1 — Tailwind CSS v4 */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-}
-
-h1,
-h2,
-h3,
-strong {
-  font-family: 'Chakra Petch', 'Sora', sans-serif;
-  letter-spacing: 0.01em;
-}
-
-#root {
-  min-height: 100vh;
+@keyframes grow {
+  from { transform: scaleY(0.1); }
+  to   { transform: scaleY(1); }
 }

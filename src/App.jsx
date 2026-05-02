@@ -9,8 +9,6 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom'
-import './App.css'
-
 import AuthPage from './components/AuthPage'
 import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Header'
@@ -111,7 +109,7 @@ function AppLayout() {
   }
 
   return (
-    <main className="app-shell">
+    <main className="min-h-screen flex flex-col">
       <Header
         appName={t.appName}
         logo={t.logo}
@@ -120,29 +118,29 @@ function AppLayout() {
         showLanguage
       />
 
-      <div className="workspace">
+      <div className="flex flex-1">
         <Sidebar t={t} onSignOut={onSignOut} />
 
-        <section className="content">
-          <header className="section-header">
-            <h2><SectionTitle t={t} /></h2>
+        <section className="flex flex-col flex-1">
+          <header className="border-b-2 border-gray-800 px-5 py-4">
+            <h2 className="m-0 text-2xl font-bold"><SectionTitle t={t} /></h2>
           </header>
 
-          <div className="section-body">
+          <div className="p-5 flex flex-col gap-4">
             {transactionsLoading && (
-              <p className="status-msg loading">{t.loading}</p>
+              <p className="text-sm px-3 py-2 border border-blue-300 bg-blue-50 text-blue-800">{t.loading}</p>
             )}
             {transactionsError && (
-              <p className="status-msg error">{transactionsError}</p>
+              <p className="text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{transactionsError}</p>
             )}
             {statusMessage && (
-              <p className={`status-msg${statusMessage.startsWith('Error') ? ' error' : ''}`}>
+              <p className={`text-sm px-3 py-2 border ${statusMessage.startsWith('Error') ? 'border-red-300 bg-red-50 text-red-800' : 'border-teal-300 bg-teal-50 text-teal-800'}`}>
                 {statusMessage}
               </p>
             )}
 
             {/* AC 7.1 — Suspense envuelve las vistas lazy */}
-            <Suspense fallback={<p className="status-msg loading">{t.loading}</p>}>
+            <Suspense fallback={<p className="text-sm px-3 py-2 border border-blue-300 bg-blue-50 text-blue-800">{t.loading}</p>}>
               <Outlet />
             </Suspense>
           </div>
