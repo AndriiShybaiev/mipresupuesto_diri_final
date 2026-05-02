@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   BrowserRouter,
@@ -12,15 +12,17 @@ import {
 import './App.css'
 
 import AuthPage from './components/AuthPage'
-import BudgetsView from './components/BudgetsView'
-import DashboardView from './components/DashboardView'
 import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Header'
 import NotFound from './components/NotFound'
-import ReportsView from './components/ReportsView'
 import Sidebar from './components/Sidebar'
 import TransactionModal from './components/TransactionModal'
-import TransactionsView from './components/TransactionsView'
+
+// AC 7.1 — Carga Diferida (Lazy Loading) para vistas pesadas
+const DashboardView = lazy(() => import('./components/DashboardView'))
+const TransactionsView = lazy(() => import('./components/TransactionsView'))
+const BudgetsView = lazy(() => import('./components/BudgetsView'))
+const ReportsView = lazy(() => import('./components/ReportsView'))
 
 import { useAuth } from './contexts/AuthContext'
 import { useLanguage } from './contexts/LanguageContext'
@@ -127,8 +129,10 @@ function AppLayout() {
               </p>
             )}
 
-            {/* AC 5.1 — Outlet renders the matched child route */}
-            <Outlet />
+            {/* AC 7.1 — Suspense envuelve las vistas lazy */}
+            <Suspense fallback={<p className="status-msg loading">{t.loading}</p>}>
+              <Outlet />
+            </Suspense>
           </div>
         </section>
       </div>
