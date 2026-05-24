@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   BrowserRouter,
@@ -74,7 +74,7 @@ function AppLayout() {
   } = useSelector((state) => state.budget)
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const [accessDeniedNotice, setAccessDeniedNotice] = useState(false)
+  const accessDeniedNotice = !!location.state?.accessDenied
   const isStatusError = typeof statusMessage === 'string' && statusMessage.toLowerCase().startsWith('error:')
 
   useEffect(() => {
@@ -92,16 +92,13 @@ function AppLayout() {
   }, [statusMessage, dispatch])
 
   useEffect(() => {
-    if (!location.state?.accessDenied) return
-    setAccessDeniedNotice(true)
-    navigate(location.pathname, { replace: true, state: {} })
-  }, [location, navigate])
-
-  useEffect(() => {
     if (!accessDeniedNotice) return
-    const timer = setTimeout(() => setAccessDeniedNotice(false), STATUS_DISMISS_MS)
+    const timer = setTimeout(
+      () => navigate(location.pathname, { replace: true, state: {} }),
+      STATUS_DISMISS_MS,
+    )
     return () => clearTimeout(timer)
-  }, [accessDeniedNotice])
+  }, [accessDeniedNotice, location.pathname, navigate])
 
   function onSaveTransaction(input) {
     if (editingTransaction) {
