@@ -153,8 +153,9 @@ export default function AdminView() {
       )}
       {limited && (
         <p className="text-sm px-3 py-2 border border-yellow-300 bg-yellow-50 text-yellow-800 mb-3">
-          Firebase rules restrict reading all users. Showing own profile only.
-          Configure admin-only read in Firebase Console (Realtime Database -&gt; Rules), for example:
+          {t.adminLimitedWarning}
+          {' '}
+          {t.adminLimitedHint}
           <code className="font-mono bg-yellow-100 px-1 ml-1">.read: auth != null &amp;&amp; root.child('users').child(auth.uid).child('roles').child('admin').val() == true</code>
         </p>
       )}
@@ -181,7 +182,7 @@ export default function AdminView() {
                       <td className="px-3 py-2 border-b border-slate-200">{u.name}</td>
                       <td className="px-3 py-2 border-b border-slate-200">{u.email}</td>
                       <td className={`px-3 py-2 border-b border-slate-200 font-bold ${u.admin ? 'text-teal-700' : 'text-slate-500'}`}>
-                        {u.admin ? 'ADMIN' : 'USER'}
+                        {u.admin ? 'ADMIN' : t.userRole}
                       </td>
                       <td className="px-3 py-2 border-b border-slate-200">
                         {u.uid === currentUid || isBuiltInAdmin(u.email) ? (

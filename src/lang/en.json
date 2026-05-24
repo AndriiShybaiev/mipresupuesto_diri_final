@@ -63,6 +63,9 @@
   "adminDemote": "Remove admin",
   "adminRoleLocked": "Locked",
   "adminNoUsers": "No users found.",
+  "adminLimitedWarning": "Firebase rules restrict reading all users. Showing own profile only.",
+  "adminLimitedHint": "Configure admin-only read in Firebase Console (Realtime Database -> Rules), for example:",
+  "userRole": "User",
   "accessDenied": "Access denied. Admin role required.",
   "validationRequiredAuth": "Email and password are required.",
   "validationInvalidEmail": "Please enter a valid email.",
@@ -74,5 +77,7 @@
   "transactionsLoadError": "Failed to load transactions.",
   "emptyDashboard": "No data available for dashboard.",
   "emptyBudgets": "No data available for budgets.",
-  "emptyReports": "No data available for reports."
+  "emptyReports": "No data available for reports.",
+  "errorBoundaryTitle": "Unexpected error",
+  "errorBoundaryHint": "Reload the page to continue."
 }

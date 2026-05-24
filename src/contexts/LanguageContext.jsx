@@ -7,7 +7,7 @@ const MESSAGES = {
   en: enMessages,
 }
 
-const LanguageContext = createContext({
+export const LanguageContext = createContext({
   locale: 'es',
   t: esMessages,
   changeLanguage: () => {},
