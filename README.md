@@ -1,16 +1,31 @@
-# React + Vite
+# MiPresupuesto — guía rápida
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Ejecución local
 
-Currently, two official plugins are available:
+- `npm install`
+- `npm run dev`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Demo seed (etapa 7)
 
-## React Compiler
+Este proyecto incluye carga de datos demo desde el panel admin para visualizar mejor los gráficos del dashboard.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Credenciales objetivo:
 
-## Expanding the ESLint configuration
+- Admin: `admin@email.com` / `123456`
+- Usuario estándar: `user@user.user` / `123456`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Pasos:
+
+1. Inicia sesión con `admin@email.com`.
+2. Ve a `Admin Panel`.
+3. Pulsa `Cargar seed demo`.
+4. Abre `Dashboard` con admin o usuario para ver gráficos con datos de 5 meses.
+
+Limpieza de datos demo:
+
+- Desde `Admin Panel`, pulsa `Limpiar seed demo`.
+
+Notas:
+
+- El seed escribe transacciones en `users/{uid}/transactions` para ambos usuarios.
+- Si aparece error de permisos, revisa reglas de Firebase para lectura/escritura de `users/{uid}` y su rama `transactions`.
