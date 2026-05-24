@@ -35,36 +35,36 @@ export default function DashboardView() {
   return (
     <>
       <section
-        className="border-2 border-gray-800 bg-white p-4 shadow-sm grid grid-cols-3 gap-4"
+        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4"
         style={{ animation: 'fadeUp 420ms ease both' }}
       >
-        <article className="border border-gray-300 p-3">
-          <p className="m-0 text-gray-500 text-sm">{t.totalBalance}</p>
+        <article className="rounded-lg border border-slate-200 p-3">
+          <p className="m-0 text-slate-500 text-sm">{t.totalBalance}</p>
           <strong className="block mt-1 text-2xl">{formatCurrency(summary.balance)}</strong>
         </article>
-        <article className="border border-gray-300 p-3">
-          <p className="m-0 text-gray-500 text-sm">{t.income}</p>
+        <article className="rounded-lg border border-slate-200 p-3">
+          <p className="m-0 text-slate-500 text-sm">{t.income}</p>
           <strong className="block mt-1 text-2xl text-teal-700">{formatCurrency(summary.income)}</strong>
         </article>
-        <article className="border border-gray-300 p-3">
-          <p className="m-0 text-gray-500 text-sm">{t.expenses}</p>
+        <article className="rounded-lg border border-slate-200 p-3">
+          <p className="m-0 text-slate-500 text-sm">{t.expenses}</p>
           <strong className="block mt-1 text-2xl text-red-700">{formatCurrency(summary.expenses)}</strong>
         </article>
       </section>
 
       <section
-        className="border-2 border-gray-800 bg-white p-4 shadow-sm"
+        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
         style={{ animation: 'fadeUp 420ms 80ms ease both' }}
       >
-        <h3 className="m-0 mb-4 font-bold">{t.monthlyTrend}</h3>
-        <div className="grid grid-cols-4 min-h-56 items-end gap-4 border border-gray-300 p-4">
+        <h3 className="m-0 mb-4 text-lg font-bold tracking-tight">{t.monthlyTrend}</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 min-h-56 items-end gap-4 rounded-lg border border-slate-200 p-4">
           {trendData.map((item) => (
             <div key={item.month} className="flex flex-col items-center gap-2">
               <div
-                className="w-10 border-2 border-gray-800 bg-gradient-to-b from-teal-400 to-teal-700"
+                className="w-10 rounded-t-sm bg-gradient-to-b from-teal-400 to-teal-600"
                 style={{ height: `${item.height}px`, animation: 'grow 700ms ease', transformOrigin: 'bottom' }}
               />
-              <span className="text-sm">{item.month.slice(5)}</span>
+              <span className="text-sm text-slate-600">{item.month.slice(5)}</span>
             </div>
           ))}
         </div>

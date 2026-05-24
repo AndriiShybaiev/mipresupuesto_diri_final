@@ -28,30 +28,30 @@ export default function BudgetsView() {
 
   return (
     <section
-      className="border-2 border-gray-800 bg-white p-4 shadow-sm"
+      className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
       style={{ animation: 'fadeUp 420ms ease both' }}
     >
-      <h3 className="m-0 mb-4 font-bold">{t.budgetsTitle}</h3>
+      <h3 className="m-0 mb-4 text-lg font-bold tracking-tight">{t.budgetsTitle}</h3>
       <div className="grid gap-3">
         {rows.map((row) => {
           const overBudget = row.available < 0
           return (
-            <article key={row.category} className="border border-gray-300 p-3">
+            <article key={row.category} className="rounded-lg border border-slate-200 p-3">
               <div className="flex justify-between gap-4 mb-2">
                 <strong>{categoryLabel(row.category, t)}</strong>
-                <span className="text-gray-600 text-sm">
+                <span className="text-slate-500 text-sm">
                   {formatCurrency(row.used)} / {formatCurrency(row.limit)}
                 </span>
               </div>
 
-              <div className="h-2.5 border border-gray-300 bg-gray-100">
+              <div className="h-2.5 rounded-full border border-slate-200 bg-slate-100 overflow-hidden">
                 <div
                   className={`h-full ${overBudget ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-teal-300 to-teal-600'}`}
                   style={{ width: `${row.ratio}%` }}
                 />
               </div>
 
-              <p className={`mt-1 text-sm ${overBudget ? 'text-red-700 font-semibold' : 'text-gray-600'}`}>
+              <p className={`mt-1 text-sm ${overBudget ? 'text-red-700 font-semibold' : 'text-slate-500'}`}>
                 {overBudget ? t.overBudget : t.available}: {formatCurrency(Math.abs(row.available))}
               </p>
             </article>

@@ -121,7 +121,7 @@ function AppLayout() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       <Header
         appName={t.appName}
         logo={t.logo}
@@ -133,9 +133,9 @@ function AppLayout() {
       <div className="flex flex-1">
         <Sidebar t={t} onSignOut={onSignOut} />
 
-        <section className="flex flex-col flex-1">
-          <header className="border-b-2 border-gray-800 px-5 py-4">
-            <h2 className="m-0 text-2xl font-bold"><SectionTitle t={t} /></h2>
+        <section className="flex min-w-0 flex-col flex-1">
+          <header className="border-b border-slate-200 bg-white/80 px-5 py-4 backdrop-blur">
+            <h2 className="m-0 text-2xl font-bold tracking-tight"><SectionTitle t={t} /></h2>
           </header>
 
           <div className="p-5 flex flex-col gap-4">

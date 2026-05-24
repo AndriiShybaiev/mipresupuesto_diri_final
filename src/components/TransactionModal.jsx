@@ -24,7 +24,7 @@ function buildInitialForm(initialValues) {
   }
 }
 
-const inputClass = 'min-h-9 px-2 border border-gray-300 bg-white w-full'
+const inputClass = 'min-h-10 px-3 rounded-md border border-slate-300 bg-white w-full focus:outline-none focus:ring-2 focus:ring-teal-500/30'
 
 export default function TransactionModal({ t, initialValues, isMutating, onClose, onSave }) {
   const [form, setForm] = useState(() => buildInitialForm(initialValues))
@@ -74,7 +74,7 @@ export default function TransactionModal({ t, initialValues, isMutating, onClose
 
       {/* Centered panel */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-md bg-white border-2 border-gray-800 p-4">
+        <DialogPanel className="w-full max-w-md rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
           <form onSubmit={onSubmit} className="grid gap-3">
             <DialogTitle className="text-lg font-bold m-0">
               {isEditing ? t.editMovement : t.addMovement}
@@ -146,14 +146,14 @@ export default function TransactionModal({ t, initialValues, isMutating, onClose
             <div className="flex gap-2 justify-end mt-1">
               <button
                 type="submit"
-                className="bg-teal-700 text-white border-2 border-teal-800 px-4 py-2 cursor-pointer hover:bg-teal-800 disabled:opacity-50"
+                className="rounded-md bg-teal-600 text-white px-4 py-2 cursor-pointer font-medium hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/40 disabled:opacity-50"
                 disabled={isMutating}
               >
                 {isMutating ? `${t.save}...` : t.save}
               </button>
               <button
                 type="button"
-                className="border-2 border-gray-800 bg-white px-4 py-2 cursor-pointer hover:bg-gray-100 disabled:opacity-50"
+                className="rounded-md border border-slate-300 bg-white px-4 py-2 cursor-pointer font-medium hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/40 disabled:opacity-50"
                 onClick={onClose}
                 disabled={isMutating}
               >
