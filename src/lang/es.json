@@ -60,5 +60,16 @@
   "adminRole": "Rol",
   "adminName": "Nombre",
   "adminNoUsers": "No se encontraron usuarios.",
-  "accessDenied": "Acceso denegado. Se requiere rol de administrador."
+  "accessDenied": "Acceso denegado. Se requiere rol de administrador.",
+  "validationRequiredAuth": "Email y contraseña son obligatorios.",
+  "validationInvalidEmail": "Introduce un email válido.",
+  "validationPasswordMin": "La contraseña debe tener al menos 6 caracteres.",
+  "validationDateRequired": "La fecha es obligatoria.",
+  "validationConceptRequired": "El concepto es obligatorio.",
+  "validationAmountPositive": "El importe debe ser mayor que 0.",
+  "authenticationFailed": "La autenticación falló.",
+  "transactionsLoadError": "No se pudieron cargar las transacciones.",
+  "emptyDashboard": "No hay datos para mostrar en el dashboard.",
+  "emptyBudgets": "No hay datos para mostrar presupuestos.",
+  "emptyReports": "No hay datos para mostrar informes."
 }

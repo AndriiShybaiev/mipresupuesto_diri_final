@@ -10,13 +10,25 @@ import {
 
 export default function ReportsView() {
   const { t } = useLanguage()
-  const { transactions } = useSelector((state) => state.budget)
+  const { transactions, transactionsLoading, transactionsError } = useSelector((state) => state.budget)
   const currentMonth = new Date().toISOString().slice(0, 7)
 
   const reportData = useMemo(() => {
     const monthTransactions = monthlyTransactions(transactions, currentMonth)
     return calculateReports(monthTransactions, transactions)
   }, [transactions, currentMonth])
+
+  if (transactionsLoading) {
+    return <p className="text-sm px-3 py-2 border border-blue-300 bg-blue-50 text-blue-800">{t.loading}</p>
+  }
+
+  if (transactionsError) {
+    return <p className="text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{t.transactionsLoadError}</p>
+  }
+
+  if (transactions.length === 0) {
+    return <p className="text-sm px-3 py-2 border border-gray-300 bg-gray-50 text-gray-700">{t.emptyReports}</p>
+  }
 
   return (
     <section

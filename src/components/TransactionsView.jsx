@@ -7,13 +7,21 @@ import { categoryLabel, filterTransactions, formatCurrency } from '../services/f
 export default function TransactionsView() {
   const { t } = useLanguage()
   const dispatch = useDispatch()
-  const { monthFilter, search, transactions } = useSelector((state) => state.budget)
+  const { monthFilter, search, transactions, transactionsLoading, transactionsError } = useSelector((state) => state.budget)
   const currentMonth = new Date().toISOString().slice(0, 7)
 
   const filteredTransactions = useMemo(
     () => filterTransactions(transactions, { monthFilter, currentMonth, search }),
     [transactions, monthFilter, currentMonth, search],
   )
+
+  if (transactionsLoading) {
+    return <p className="text-sm px-3 py-2 border border-blue-300 bg-blue-50 text-blue-800">{t.loading}</p>
+  }
+
+  if (transactionsError) {
+    return <p className="text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{t.transactionsLoadError}</p>
+  }
 
   return (
     <section
@@ -97,7 +105,7 @@ export default function TransactionsView() {
         </table>
 
         {filteredTransactions.length === 0 && (
-          <p className="px-3 py-2 text-gray-500">{t.noTransactions}</p>
+          <p className="text-sm px-3 py-2 border border-gray-300 bg-gray-50 text-gray-700">{t.noTransactions}</p>
         )}
       </div>
     </section>

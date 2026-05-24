@@ -28,10 +28,12 @@ const inputClass = 'min-h-9 px-2 border border-gray-300 bg-white w-full'
 
 export default function TransactionModal({ t, initialValues, isMutating, onClose, onSave }) {
   const [form, setForm] = useState(() => buildInitialForm(initialValues))
+  const [error, setError] = useState('')
 
   const isEditing = Boolean(initialValues)
 
   function updateField(field, value) {
+    if (error) setError('')
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -39,14 +41,27 @@ export default function TransactionModal({ t, initialValues, isMutating, onClose
     event.preventDefault()
 
     const amount = Number(form.amount)
-    if (!form.date || !form.concept || Number.isNaN(amount) || amount <= 0) {
+    const concept = form.concept.trim()
+
+    if (!form.date) {
+      setError(t.validationDateRequired)
+      return
+    }
+
+    if (!concept) {
+      setError(t.validationConceptRequired)
+      return
+    }
+
+    if (Number.isNaN(amount) || amount <= 0) {
+      setError(t.validationAmountPositive)
       return
     }
 
     const category = form.type === 'income' ? 'income' : form.category
     onSave({
       date: form.date,
-      concept: form.concept,
+      concept,
       category,
       amount,
     })
@@ -125,6 +140,8 @@ export default function TransactionModal({ t, initialValues, isMutating, onClose
                 placeholder="0.00"
               />
             </label>
+
+            {error ? <p className="m-0 text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{error}</p> : null}
 
             <div className="flex gap-2 justify-end mt-1">
               <button

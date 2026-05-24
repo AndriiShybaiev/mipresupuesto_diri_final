@@ -9,43 +9,47 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom'
-import AuthPage from './components/AuthPage'
-import ErrorBoundary from './components/ErrorBoundary'
+import {
+  addTransaction,
+  budgetActions,
+  clearStatusMessage,
+  startTransactionsSubscription,
+  stopTransactionsSubscription,
+  updateTransaction,
+} from './store/budgetSlice'
+import { useAuth } from './contexts/AuthContext'
+import { useLanguage } from './contexts/LanguageContext'
 import Header from './components/Header'
-import NotFound from './components/NotFound'
 import Sidebar from './components/Sidebar'
 import TransactionModal from './components/TransactionModal'
+import ErrorBoundary from './components/ErrorBoundary'
+import NotFound from './components/NotFound'
+import AuthPage from './components/AuthPage'
 
-// AC 7.1 — Carga Diferida (Lazy Loading) para vistas pesadas
 const DashboardView = lazy(() => import('./components/DashboardView'))
 const TransactionsView = lazy(() => import('./components/TransactionsView'))
 const BudgetsView = lazy(() => import('./components/BudgetsView'))
 const ReportsView = lazy(() => import('./components/ReportsView'))
 const AdminView = lazy(() => import('./components/AdminView'))
 
-import { useAuth } from './contexts/AuthContext'
-import { useLanguage } from './contexts/LanguageContext'
-import {
-  budgetActions,
-  clearStatusMessage,
-  startTransactionsSubscription,
-  stopTransactionsSubscription,
-  addTransaction,
-  updateTransaction,
-} from './store/budgetSlice'
-
 const STATUS_DISMISS_MS = 3000
 
-// ─── ProtectedRoute ───────────────────────────────────────────────────────────
-// Redirects to /login if the user is not authenticated (AC 8.1 pattern)
+function SectionTitle({ t }) {
+  const location = useLocation()
+  if (location.pathname.startsWith('/transactions')) return t.transactions
+  if (location.pathname.startsWith('/budgets')) return t.budgets
+  if (location.pathname.startsWith('/reports')) return t.reports
+  if (location.pathname.startsWith('/admin')) return t.adminPanel
+  return t.dashboard
+}
+
 function ProtectedRoute() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+  if (loading) return null
   if (!user) return <Navigate to="/login" replace />
   return <Outlet />
 }
 
-// ─── AdminRoute ───────────────────────────────────────────────────────────────
-// Redirects to /dashboard if the user does not have the ADMIN role (AC 8.2 pattern)
 function AdminRoute() {
   const { roles } = useAuth()
   const location = useLocation()
@@ -56,16 +60,6 @@ function AdminRoute() {
   return <Outlet />
 }
 
-// ─── Section title ────────────────────────────────────────────────────────────
-function SectionTitle({ t }) {
-  const { pathname } = useLocation()
-  const key = pathname.replace('/', '') || 'dashboard'
-  if (key === 'dashboard') return t.currentMonthSummary
-  if (key === 'admin') return t.adminPanel
-  return t[key] ?? key
-}
-
-// ─── App layout (authenticated shell) ────────────────────────────────────────
 function AppLayout() {
   const { t, locale, changeLanguage } = useLanguage()
   const { signOut, user } = useAuth()
@@ -81,15 +75,16 @@ function AppLayout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [accessDeniedNotice, setAccessDeniedNotice] = useState(false)
+  const isStatusError = typeof statusMessage === 'string' && statusMessage.toLowerCase().startsWith('error:')
 
-  // Subscribe to Firebase transactions when user is present
   useEffect(() => {
     if (!user) return
     dispatch(startTransactionsSubscription())
-    return () => { dispatch(stopTransactionsSubscription()) }
+    return () => {
+      dispatch(stopTransactionsSubscription())
+    }
   }, [dispatch, user])
 
-  // Auto-dismiss statusMessage after 3 seconds
   useEffect(() => {
     if (!statusMessage) return
     const timer = setTimeout(() => dispatch(clearStatusMessage()), STATUS_DISMISS_MS)
@@ -151,7 +146,7 @@ function AppLayout() {
               <p className="text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{transactionsError}</p>
             )}
             {statusMessage && (
-              <p className={`text-sm px-3 py-2 border ${statusMessage.startsWith('Error') ? 'border-red-300 bg-red-50 text-red-800' : 'border-teal-300 bg-teal-50 text-teal-800'}`}>
+              <p className={`text-sm px-3 py-2 border ${isStatusError ? 'border-red-300 bg-red-50 text-red-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800'}`}>
                 {statusMessage}
               </p>
             )}
@@ -159,7 +154,6 @@ function AppLayout() {
               <p className="text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{t.accessDenied}</p>
             )}
 
-            {/* AC 7.1 — Suspense envuelve las vistas lazy */}
             <Suspense fallback={<p className="text-sm px-3 py-2 border border-blue-300 bg-blue-50 text-blue-800">{t.loading}</p>}>
               <Outlet />
             </Suspense>
@@ -180,16 +174,13 @@ function AppLayout() {
   )
 }
 
-// ─── App root ─────────────────────────────────────────────────────────────────
 function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
         <Routes>
-          {/* Public route */}
           <Route path="/login" element={<AuthPage />} />
 
-          {/* Protected routes — wrapped in ProtectedRoute (renders Outlet or redirects) */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
@@ -198,14 +189,12 @@ function App() {
               <Route path="/budgets" element={<BudgetsView />} />
               <Route path="/reports" element={<ReportsView />} />
 
-              {/* AC 8.2 — Admin-only routes */}
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminView />} />
               </Route>
             </Route>
           </Route>
 
-          {/* AC 1.6 — 404 Not Found */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </ErrorBoundary>

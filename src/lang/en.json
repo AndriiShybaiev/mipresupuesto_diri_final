@@ -60,5 +60,16 @@
   "adminRole": "Role",
   "adminName": "Name",
   "adminNoUsers": "No users found.",
-  "accessDenied": "Access denied. Admin role required."
+  "accessDenied": "Access denied. Admin role required.",
+  "validationRequiredAuth": "Email and password are required.",
+  "validationInvalidEmail": "Please enter a valid email.",
+  "validationPasswordMin": "Password must be at least 6 characters.",
+  "validationDateRequired": "Date is required.",
+  "validationConceptRequired": "Concept is required.",
+  "validationAmountPositive": "Amount must be greater than 0.",
+  "authenticationFailed": "Authentication failed.",
+  "transactionsLoadError": "Failed to load transactions.",
+  "emptyDashboard": "No data available for dashboard.",
+  "emptyBudgets": "No data available for budgets.",
+  "emptyReports": "No data available for reports."
 }

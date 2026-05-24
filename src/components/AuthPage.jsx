@@ -4,6 +4,9 @@ import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import Header from './Header'
 
+const MIN_PASSWORD_LENGTH = 6
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const INITIAL_FORM = {
   email: '',
   password: '',
@@ -32,20 +35,33 @@ export default function AuthPage() {
     event.preventDefault()
     setError('')
 
-    if (!form.email || !form.password) {
-      setError('Email and password are required')
+    const email = form.email.trim()
+    const password = form.password.trim()
+
+    if (!email || !password) {
+      setError(t.validationRequiredAuth)
+      return
+    }
+
+    if (!EMAIL_PATTERN.test(email)) {
+      setError(t.validationInvalidEmail)
+      return
+    }
+
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(t.validationPasswordMin)
       return
     }
 
     try {
       if (authMode === 'login') {
-        await signIn({ email: form.email, password: form.password })
+        await signIn({ email, password })
       } else {
-        await register({ email: form.email, password: form.password, name: form.fullName })
+        await register({ email, password, name: form.fullName.trim() })
       }
       navigate('/dashboard')
     } catch (submitError) {
-      setError(submitError.message || 'Authentication failed')
+      setError(submitError.message || t.authenticationFailed)
     }
   }
 
@@ -97,7 +113,7 @@ export default function AuthPage() {
               />
             </label>
 
-            {error ? <p className="m-0 text-red-700 font-semibold text-sm">{error}</p> : null}
+            {error ? <p className="m-0 text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{error}</p> : null}
 
             <div className="grid grid-cols-2 gap-2 mt-1">
               <button type="submit" className="bg-teal-700 text-white border-2 border-teal-800 px-3 py-2 cursor-pointer hover:bg-teal-800">
