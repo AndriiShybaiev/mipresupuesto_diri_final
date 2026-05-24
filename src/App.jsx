@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   BrowserRouter,
@@ -48,8 +48,11 @@ function ProtectedRoute() {
 // Redirects to /dashboard if the user does not have the ADMIN role (AC 8.2 pattern)
 function AdminRoute() {
   const { roles } = useAuth()
+  const location = useLocation()
   if (!roles) return null
-  if (!roles.includes('ADMIN')) return <Navigate to="/dashboard" replace />
+  if (!roles.includes('ADMIN')) {
+    return <Navigate to="/dashboard" replace state={{ accessDenied: true, from: location.pathname }} />
+  }
   return <Outlet />
 }
 
@@ -66,6 +69,7 @@ function SectionTitle({ t }) {
 function AppLayout() {
   const { t, locale, changeLanguage } = useLanguage()
   const { signOut, user } = useAuth()
+  const location = useLocation()
   const {
     showModal,
     editingTransaction,
@@ -76,6 +80,7 @@ function AppLayout() {
   } = useSelector((state) => state.budget)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [accessDeniedNotice, setAccessDeniedNotice] = useState(false)
 
   // Subscribe to Firebase transactions when user is present
   useEffect(() => {
@@ -90,6 +95,18 @@ function AppLayout() {
     const timer = setTimeout(() => dispatch(clearStatusMessage()), STATUS_DISMISS_MS)
     return () => clearTimeout(timer)
   }, [statusMessage, dispatch])
+
+  useEffect(() => {
+    if (!location.state?.accessDenied) return
+    setAccessDeniedNotice(true)
+    navigate(location.pathname, { replace: true, state: {} })
+  }, [location, navigate])
+
+  useEffect(() => {
+    if (!accessDeniedNotice) return
+    const timer = setTimeout(() => setAccessDeniedNotice(false), STATUS_DISMISS_MS)
+    return () => clearTimeout(timer)
+  }, [accessDeniedNotice])
 
   function onSaveTransaction(input) {
     if (editingTransaction) {
@@ -137,6 +154,9 @@ function AppLayout() {
               <p className={`text-sm px-3 py-2 border ${statusMessage.startsWith('Error') ? 'border-red-300 bg-red-50 text-red-800' : 'border-teal-300 bg-teal-50 text-teal-800'}`}>
                 {statusMessage}
               </p>
+            )}
+            {accessDeniedNotice && (
+              <p className="text-sm px-3 py-2 border border-red-300 bg-red-50 text-red-800">{t.accessDenied}</p>
             )}
 
             {/* AC 7.1 — Suspense envuelve las vistas lazy */}
