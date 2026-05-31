@@ -173,7 +173,7 @@ function AppLayout() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ErrorBoundary>
         <Routes>
           <Route path="/login" element={<AuthPage />} />
